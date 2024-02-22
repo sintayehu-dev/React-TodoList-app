@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaTrash, FaCheck } from 'react-icons/fa'; // Import icons
+import { FaTrash, FaCheck, FaDownload, FaEdit } from 'react-icons/fa'; // Import icons
+import Logo from "./assets/p-pc.jpg";
 import './App.css';
 
 const App = () => {
   const [tasks, setTasks] = useState([]);
   const [taskInput, setTaskInput] = useState('');
   const [initialLoad, setInitialLoad] = useState(false);
+  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [editedTaskText, setEditedTaskText] = useState('');
 
   useEffect(() => {
     // Load tasks from local storage on component mount
@@ -43,13 +46,29 @@ const App = () => {
     setTasks(tasks.filter((task) => task.id !== taskId));
   };
 
+  const editTask = (taskId, text) => {
+    setEditingTaskId(taskId);
+    setEditedTaskText(text);
+  };
+
+  const saveEditedTask = (taskId) => {
+    setTasks(tasks.map((task) => (task.id === taskId ? { ...task, text: editedTaskText } : task)));
+    setEditingTaskId(null);
+  };
+
   const clearCompleted = () => {
     setTasks(tasks.filter((task) => !task.completed));
   };
 
   return (
     <div className="App">
-      <h1>React Todo App</h1>
+      <div className="logo-container">
+        <div className="logo">
+          {/* Your image goes here */}
+          <img src={Logo} alt="Logo" /> 
+          <p>sintayehu-dev Todo List</p>
+        </div>
+      </div>
       <div>
         <input
           type="text"
@@ -59,25 +78,43 @@ const App = () => {
           onKeyPress={handleKeyPress} 
         />
         <button onClick={addTask}>
-          <FaPlus /> {/* Add icon */}
+          <FaDownload /> {/* Add icon */}
         </button>
       </div>
       <ul>
         {tasks.map((task) => (
           <li key={task.id} className={task.completed ? 'completed' : ''}>
-            <input
+            <input className='checkbox'
               type="checkbox"
               checked={task.completed}
               onChange={() => toggleTask(task.id)}
             />
-            <span>{task.text}</span>
-            <button onClick={() => deleteTask(task.id)}>
-              <FaTrash /> {/* Delete icon */}
-            </button>
+            {editingTaskId === task.id ? (
+              <>
+                <input
+                  type="text"
+                  value={editedTaskText}
+                  onChange={(e) => setEditedTaskText(e.target.value)}
+                />
+                <button className='edit' onClick={() => saveEditedTask(task.id)}>
+                  <FaDownload /> {/* Save icon */}
+                </button>
+              </>
+            ) : (
+              <>
+                <span>{task.text}</span>
+                <button className='edit' onClick={() => editTask(task.id, task.text)}>
+                  <FaEdit /> {/* Edit icon */}
+                </button>
+                <button className='delete' onClick={() => deleteTask(task.id)}>
+                  <FaTrash /> {/* Delete icon */}
+                </button>
+              </>
+            )}
           </li>
         ))}
       </ul>
-      <button onClick={clearCompleted}>
+      <button className='clear-completed' onClick={clearCompleted}>
         <FaCheck /> Clear Completed {/* Check icon */}
       </button>
     </div>
